@@ -7,7 +7,7 @@ export const inngest = new Inngest({ id: "project-management" });
 //#region New User Created
 const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk" },
-  { event: "clerk/user.created" },
+  { event: "webhook-integration/user.created" },
   async ({ event }) => {
     const { data } = event;
     await prisma.user.create({
@@ -25,7 +25,7 @@ const syncUserCreation = inngest.createFunction(
 //#region Delete User
 const syncUserDeletion = inngest.createFunction(
   { id: "delete-user-with-clerk" },
-  { event: "clerk/user.deleted" },
+  { event: "webhook-integration/user.deleted" },
   async ({ event }) => {
     const { data } = event;
     await prisma.user.delete({
@@ -38,7 +38,7 @@ const syncUserDeletion = inngest.createFunction(
 //#region Update User
 const syncUserUpdation = inngest.createFunction(
   { id: "update-user-from-clerk" },
-  { event: "clerk/user.updated" },
+  { event: "webhook-integration/user.updated" },
   async ({ event }) => {
     const { data } = event;
     await prisma.user.update({
