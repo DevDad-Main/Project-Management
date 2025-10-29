@@ -4,6 +4,7 @@ import "dotenv/config";
 import { serve } from "inngest/express";
 import { clerkMiddleware } from "@clerk/express";
 import { inngest, functions } from "./inngest/index.js";
+import workspaceRouter from "./routes/workspace.route.js";
 
 //#region Constants
 const app = express();
@@ -23,6 +24,8 @@ app.use("/api/inngest", serve({ client: inngest, functions }));
 app.get("/", (_, res) => {
   res.send("Server is live!");
 });
+
+app.use("/api/workspaces", workspaceRouter);
 //#endregion
 
 app.listen(PORT, () => {
