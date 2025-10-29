@@ -1,3 +1,5 @@
+import { getAuth } from "@clerk/express";
+
 const authenticateUser = (req, res, next) => {
   try {
     const { userId } = getAuth(req);

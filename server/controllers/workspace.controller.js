@@ -4,11 +4,11 @@ import prisma from "../configs/prisma.js";
 //#region Get All Workspaces For User
 export const getUserWorkspaces = async (req, res) => {
   try {
-    const { userId } = getAuth(req);
+    const { userId } = await req.auth();
 
     //NOTE: Very similiar syntax to mongoose, essentially we are doing a chained populate query, include acts as populate
     const workspaces = await prisma.workspace.findMany({
-      where: { members: { some: { userId } } },
+      where: { members: { some: { userId: userId } } },
       include: {
         members: { include: { user: true } },
         projects: {
@@ -29,6 +29,8 @@ export const getUserWorkspaces = async (req, res) => {
     //NOTE: this will return null if no workspaces are found we can check if its truthy of not
     if (!workspaces)
       return res.status(404).json({ message: "No Workspaces Found" });
+
+    console.log(workspaces);
 
     return res.status(200).json({ success: true, workspaces });
   } catch (error) {

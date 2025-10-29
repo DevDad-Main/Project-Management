@@ -7,7 +7,7 @@ import authenticateUser from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/", authenticateUser, getUserWorkspaces);
-router.post("/add-member", authenticateUser, addMemberToWorkspace);
+router.get("/", getUserWorkspaces);
+router.post("/add-member", addMemberToWorkspace);
 
 export default router;
