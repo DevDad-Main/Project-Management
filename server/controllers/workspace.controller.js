@@ -4,7 +4,7 @@ import prisma from "../configs/prisma.js";
 //#region Get All Workspaces For User
 export const getUserWorkspaces = async (req, res) => {
   try {
-    const { userId } = await req.auth();
+    const { userId } = getAuth(req);
 
     //NOTE: Very similiar syntax to mongoose, essentially we are doing a chained populate query, include acts as populate
     const workspaces = await prisma.workspace.findMany({
@@ -26,9 +26,11 @@ export const getUserWorkspaces = async (req, res) => {
       },
     });
 
-    //NOTE: this will return null if no workspaces are found we can check if its truthy of not
-    if (!workspaces)
-      return res.status(404).json({ message: "No Workspaces Found" });
+    //NOTE: findMany will return an empty Array if no workspaces are found we can check if its truthy of not - Doingit like this will allow us to not get stuck in an endless loop on the front end with the CreateOrganization component- Tells our reducer we have succeeded even if we haven't
+    if (workspaces.length === 0)
+      return res
+        .status(200)
+        .json({ message: "No Workspaces Found", workspaces: [] });
 
     console.log(workspaces);
 

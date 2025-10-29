@@ -149,34 +149,34 @@ const workspaceSlice = createSlice({
           : w,
       );
     },
-    extraReducers: (builder) => {
-      builder.addCase(fetchWorkspaces.pending, (state) => {
-        state.loading = true;
-      });
-      builder.addCase(fetchWorkspaces.fulfilled, (state, action) => {
-        state.workspaces = action.payload;
-        if (action.payload.length > 0) {
-          const localStorageCurrentWorkspaceId =
-            localStorage.getItem("currentWorkspaceId");
-          if (localStorageCurrentWorkspaceId) {
-            const findWorkspace = action.payload.find(
-              (w) => w.id === localStorageCurrentWorkspaceId,
-            );
-            if (findWorkspace) {
-              state.currentWorkspace = findWorkspace;
-            } else {
-              state.currentWorkspace = action.payload[0];
-            }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchWorkspaces.pending, (state) => {
+      state.loading = true;
+    });
+    builder.addCase(fetchWorkspaces.fulfilled, (state, action) => {
+      state.workspaces = action.payload;
+      if (action.payload.length > 0) {
+        const localStorageCurrentWorkspaceId =
+          localStorage.getItem("currentWorkspaceId");
+        if (localStorageCurrentWorkspaceId) {
+          const findWorkspace = action.payload.find(
+            (w) => w.id === localStorageCurrentWorkspaceId,
+          );
+          if (findWorkspace) {
+            state.currentWorkspace = findWorkspace;
           } else {
             state.currentWorkspace = action.payload[0];
           }
+        } else {
+          state.currentWorkspace = action.payload[0];
         }
-        state.loading = false;
-      });
-      builder.addCase(fetchWorkspaces.rejected, (state) => {
-        state.loading = false;
-      });
-    },
+      }
+      state.loading = false;
+    });
+    builder.addCase(fetchWorkspaces.rejected, (state) => {
+      state.loading = false;
+    });
   },
 });
 
