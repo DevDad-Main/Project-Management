@@ -1,4 +1,4 @@
-export default authenticateUser = (req, res, next) => {
+const authenticateUser = (req, res, next) => {
   try {
     const { userId } = getAuth(req);
     if (!userId) {
@@ -9,3 +9,5 @@ export default authenticateUser = (req, res, next) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export default authenticateUser;

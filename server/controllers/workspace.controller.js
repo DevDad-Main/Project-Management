@@ -1,5 +1,5 @@
 import { getAuth } from "@clerk/express";
-import prisma from "../configs/prisma";
+import prisma from "../configs/prisma.js";
 
 //#region Get All Workspaces For User
 export const getUserWorkspaces = async (req, res) => {
@@ -94,13 +94,11 @@ export const addMemberToWorkspace = async (req, res) => {
       },
     });
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        member,
-        message: "New member added successfully",
-      });
+    return res.status(200).json({
+      success: true,
+      member,
+      message: "New member added successfully",
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error.message });

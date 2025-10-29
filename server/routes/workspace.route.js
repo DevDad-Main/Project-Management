@@ -2,12 +2,12 @@ import express from "express";
 import {
   getUserWorkspaces,
   addMemberToWorkspace,
-} from "../controllers/workspace.controller";
-import authMiddleware from "../middleware/auth.middleware";
+} from "../controllers/workspace.controller.js";
+import authenticateUser from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getUserWorkspaces);
-router.post("/add-member", authMiddleware, addMemberToWorkspace);
+router.get("/", authenticateUser, getUserWorkspaces);
+router.post("/add-member", authenticateUser, addMemberToWorkspace);
 
 export default router;
