@@ -5,6 +5,7 @@ import { serve } from "inngest/express";
 import { clerkMiddleware } from "@clerk/express";
 import { inngest, functions } from "./inngest/index.js";
 import workspaceRouter from "./routes/workspace.route.js";
+import projectRouter from "./routes/project.route.js";
 
 //#region Constants
 const app = express();
@@ -57,6 +58,7 @@ app.get("/", (_, res) => {
 });
 
 app.use("/api/workspaces", workspaceRouter);
+app.use("/api/projects", projectRouter);
 //#endregion
 
 app.listen(PORT, () => {

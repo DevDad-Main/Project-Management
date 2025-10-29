@@ -1,9 +1,8 @@
-import express from "express";
 import {
   getUserWorkspaces,
   addMemberToWorkspace,
 } from "../controllers/workspace.controller.js";
-import authenticateUser from "../middleware/auth.middleware.js";
+import express from "express";
 import { requireAuth } from "@clerk/express";
 
 const router = express.Router();
