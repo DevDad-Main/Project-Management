@@ -3,7 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import { serve } from "inngest/express";
 import { clerkMiddleware } from "@clerk/express";
-import { inngest, functions } from "./inngest";
+import { inngest, functions } from "./inngest/index.js";
 
 //#region Constants
 const app = express();
