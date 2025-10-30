@@ -1,5 +1,6 @@
 import { getAuth } from "@clerk/express";
 import prisma from "../configs/prisma.js";
+import { inngest } from "inngest/index.js";
 
 //#region Create Task
 export const createTask = async (req, res) => {
@@ -56,6 +57,11 @@ export const createTask = async (req, res) => {
     const taskWithAssignee = await prisma.task.findUnique({
       where: { id: task.id },
       include: { assignee: true },
+    });
+
+    await inngest.send({
+      name: "app/task.assigned",
+      data: { taskId: task.id, origin },
     });
 
     return res.status(200).json({

@@ -2,24 +2,22 @@ import { createTransport } from "nodemailer";
 
 // Create a test account or replace with real credentials.
 const transporter = createTransport({
-  host: "smtp.ethereal.email",
+  host: "smtp-relay.brevo.com",
   port: 587,
-  secure: false, // true for 465, false for other ports
   auth: {
-    user: "maddison53@ethereal.email",
-    pass: "jn7jnAPss4f63QBp6D",
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
-// Wrap in an async IIFE so we can use await.
-(async () => {
-  const info = await transporter.sendMail({
-    from: '"Maddison Foo Koch" <maddison53@ethereal.email>',
-    to: "bar@example.com, baz@example.com",
-    subject: "Hello ✔",
-    text: "Hello world?", // plain‑text body
-    html: "<b>Hello world?</b>", // HTML body
+const sendEmail = async ({ to, subject, body }) => {
+  const response = await transporter.sendMail({
+    from: process.env.SENDER_EMAIL,
+    to,
+    subject,
+    html: body,
   });
+  return response;
+};
 
-  console.log("Message sent:", info.messageId);
-})();
+export default sendEmail;
