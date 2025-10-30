@@ -26,11 +26,12 @@ const Layout = () => {
   }, [dispatch]);
 
   // Initial load of workspace
+
   useEffect(() => {
-    if (isLoaded && user && workspaces.length === 0) {
+    if (isLoaded && user) {
       dispatch(fetchWorkspaces({ getToken }));
     }
-  }, [user, isLoaded]);
+  }, [user, isLoaded, getToken, dispatch]);
 
   if (!user) {
     return (
@@ -47,7 +48,7 @@ const Layout = () => {
       </div>
     );
 
-  if (user && workspaces.length === 0) {
+  if (user && !loading && workspaces.length === 0) {
     return (
       <div className="min-h-screen flex justify-center items-center">
         <CreateOrganization />
