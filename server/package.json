@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
-  "types": "module",
+  "type": "module",
   "scripts": {
     "postinstall": "npx prisma generate",
     "dev": "nodemon server.js",
