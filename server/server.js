@@ -7,6 +7,7 @@ import { inngest, functions } from "./inngest/index.js";
 import workspaceRouter from "./routes/workspace.route.js";
 import projectRouter from "./routes/project.route.js";
 import taskRouter from "routes/task.route.js";
+import commentRouter from "routes/comment.route.js";
 
 //#region Constants
 const app = express();
@@ -60,7 +61,8 @@ app.get("/", (_, res) => {
 
 app.use("/api/workspaces", workspaceRouter);
 app.use("/api/projects", projectRouter);
-app.use("/api/projects", taskRouter);
+app.use("/api/tasks", taskRouter);
+app.use("/api/comments/", commentRouter);
 //#endregion
 
 app.listen(PORT, () => {
