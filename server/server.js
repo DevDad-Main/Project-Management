@@ -6,8 +6,8 @@ import { clerkMiddleware } from "@clerk/express";
 import { inngest, functions } from "./inngest/index.js";
 import workspaceRouter from "./routes/workspace.route.js";
 import projectRouter from "./routes/project.route.js";
-import taskRouter from "routes/task.route.js";
-import commentRouter from "routes/comment.route.js";
+import taskRouter from "./routes/task.route.js";
+import commentRouter from "./routes/comment.route.js";
 
 //#region Constants
 const app = express();
