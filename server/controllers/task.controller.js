@@ -1,6 +1,6 @@
 import { getAuth } from "@clerk/express";
 import prisma from "../configs/prisma.js";
-import { inngest } from "inngest/index.js";
+import { inngest } from "../inngest/index.js";
 
 //#region Create Task
 export const createTask = async (req, res) => {
