@@ -28,10 +28,10 @@ const Layout = () => {
   // Initial load of workspace
 
   useEffect(() => {
-    if (isLoaded && user) {
+    if (isLoaded && user && workspaces.length === 0) {
       dispatch(fetchWorkspaces({ getToken }));
     }
-  }, [user, isLoaded, getToken, dispatch]);
+  }, [user, isLoaded]);
 
   if (!user) {
     return (
@@ -48,13 +48,13 @@ const Layout = () => {
       </div>
     );
 
-  if (user && !loading && workspaces.length === 0) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <CreateOrganization />
-      </div>
-    );
-  }
+  // if (user && !loading && workspaces.length === 0) {
+  //   return (
+  //     <div className="min-h-screen flex justify-center items-center">
+  //       <CreateOrganization />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="flex bg-white dark:bg-zinc-950 text-gray-900 dark:text-slate-100">
