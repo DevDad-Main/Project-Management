@@ -50,7 +50,7 @@ export const createTask = async (req, res) => {
         assigneeId,
         status: String(status).toUpperCase(),
         due_date: due_date ? new Date(due_date) : null,
-        type,
+        type: String(type).toUpperCase(),
       },
     });
 
@@ -121,6 +121,8 @@ export const deleteTask = async (req, res) => {
   try {
     const { userId } = getAuth(req);
     const { taskIds } = req.body;
+
+    console.log("Task IDs", taskIds);
 
     const tasks = await prisma.task.findMany({
       where: { id: { in: taskIds } },

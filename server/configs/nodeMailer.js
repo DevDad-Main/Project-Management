@@ -2,11 +2,12 @@ import { createTransport } from "nodemailer";
 
 // Create a test account or replace with real credentials.
 const transporter = createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.SENDER_EMAIL,
+    pass: process.env.GOOGLE_APP_PASSWORD,
   },
 });
 
