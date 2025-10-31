@@ -1,4 +1,5 @@
 import { createTransport } from "nodemailer";
+import "dotenv/config";
 
 // Create a test account or replace with real credentials.
 const transporter = createTransport({
