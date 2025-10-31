@@ -120,6 +120,8 @@ const ProjectTasks = ({ tasks }) => {
 
       dispatch(deleteTask(selectedTasks));
 
+      setSelectedTasks([]); // Clear the selected tasks
+
       toast.dismissAll();
       toast.success("Tasks deleted successfully");
     } catch (error) {

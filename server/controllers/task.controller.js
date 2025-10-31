@@ -1,6 +1,7 @@
 import { getAuth } from "@clerk/express";
 import prisma from "../configs/prisma.js";
 import { inngest } from "../inngest/index.js";
+// import { newTaskAddedEmail } from "../configs/nodeMailer.js";
 
 //#region Create Task
 export const createTask = async (req, res) => {
@@ -58,6 +59,8 @@ export const createTask = async (req, res) => {
       where: { id: task.id },
       include: { assignee: true },
     });
+
+    // await newTaskAddedEmail(task.id, origin);
 
     await inngest.send({
       name: "app/task.assigned",
