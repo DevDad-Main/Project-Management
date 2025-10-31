@@ -46,7 +46,7 @@ export const createTask = async (req, res) => {
         projectId,
         title,
         description,
-        priority,
+        priority: String(priority).toUpperCase(),
         assigneeId,
         status: String(status).toUpperCase(),
         due_date: due_date ? new Date(due_date) : null,

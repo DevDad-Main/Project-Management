@@ -8,6 +8,12 @@ import workspaceRouter from "./routes/workspace.route.js";
 import projectRouter from "./routes/project.route.js";
 import taskRouter from "./routes/task.route.js";
 import commentRouter from "./routes/comment.route.js";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import hpp from "hpp";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+// import xss from "xss"; // TODO: Fix Import
 
 //#region Constants
 const app = express();
@@ -25,7 +31,7 @@ const allowedOrigins = process.env.CORS_ORIGIN.split(",");
 // Security Middleware
 app.use(clerkMiddleware());
 app.use(helmet()); // Set security HTTP headers
-app.use(xss()); // Data sanitization against XSS
+// app.use(xss()); // Data sanitization against XSS
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.use("/api", limiter); // Apply rate limiting to all routes
 
