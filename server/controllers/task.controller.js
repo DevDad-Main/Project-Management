@@ -1,7 +1,7 @@
 import { getAuth } from "@clerk/express";
 import prisma from "../configs/prisma.js";
 import { inngest } from "../inngest/index.js";
-// import { newTaskAddedEmail } from "../configs/nodeMailer.js";
+import { newTaskAddedEmail } from "../configs/nodeMailer.js";
 
 //#region Create Task
 export const createTask = async (req, res) => {
@@ -60,12 +60,12 @@ export const createTask = async (req, res) => {
       include: { assignee: true },
     });
 
-    // await newTaskAddedEmail(task.id, origin);
+    await newTaskAddedEmail(task.id, origin);
 
-    await inngest.send({
-      name: "app/task.assigned",
-      data: { taskId: task.id, origin },
-    });
+    // await inngest.send({
+    //   name: "app/task.assigned",
+    //   data: { taskId: task.id, origin },
+    // });
 
     return res.status(200).json({
       task: taskWithAssignee,
@@ -126,6 +126,9 @@ export const deleteTask = async (req, res) => {
     const { taskIds } = req.body;
 
     console.log("Task IDs", taskIds);
+
+    if (taskIds.length === 0)
+      return res.status(400).json({ message: "No tasks provided" });
 
     const tasks = await prisma.task.findMany({
       where: { id: { in: taskIds } },
