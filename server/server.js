@@ -12,44 +12,47 @@ import commentRouter from "./routes/comment.route.js";
 //#region Constants
 const app = express();
 const PORT = process.env.PORT || 3000;
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
+});
 const allowedOrigins = process.env.CORS_ORIGIN.split(",");
 //#endregion
 
 //#region Middleware
+
+// Security Middleware
+app.use(clerkMiddleware());
+app.use(helmet()); // Set security HTTP headers
+app.use(xss()); // Data sanitization against XSS
+app.use(hpp()); // Prevent HTTP Parameter Pollution
+app.use("/api", limiter); // Apply rate limiting to all routes
+
+const env = process.env.NODE_ENV || "development"; // fallback
+if (env === "development") {
+  app.use(morgan("dev"));
+}
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(
   cors({
     origin: allowedOrigins,
-    methods: ["PATCH", "POST", "PUT", "GET", "DELETE", "OPTIONS"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
     allowedHeaders: [
-      // Indicates the media type of the resource (e.g., application/json, text/html).
       "Content-Type",
-
-      // Used to pass authentication credentials such as JWTs, API keys, or OAuth tokens.
       "Authorization",
-
-      // Commonly used by AJAX requests (e.g., XMLHttpRequest) to identify them as being made via JavaScript.
       "X-Requested-With",
-
-      // Custom header often used to persist device sessions or remember a user across requests.
       "device-remember-token",
-
-      // Lists the HTTP headers that are permitted in requests; usually handled by the server,
-      // but sometimes included here for compatibility.
-      "Access-Control-Allow-Headers",
-
-      // Identifies where the request originated (scheme, host, port) — used by CORS for validation.
+      "Access-Control-Allow-Origin",
       "Origin",
-
-      // Tells the server which content types the client is willing to accept in the response (e.g., JSON, XML).
       "Accept",
     ],
-    credentials: true,
-    // optionsSuccessStatus: 200,
   }),
 );
-app.use(clerkMiddleware());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 //NOTE: Inngest Endpoint so it can listen to our events and webhooks and fire them off.
 app.use("/api/inngest", serve({ client: inngest, functions }));
 //#endregion
