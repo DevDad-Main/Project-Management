@@ -41,6 +41,14 @@ export const createTask = async (req, res) => {
           "Assignee is not a member of the project/workspace - Contact your team lead",
       });
     }
+    const taskDue = new Date(due_date);
+    const projectDue = new Date(project.end_date);
+
+    if (taskDue > projectDue) {
+      return res.status(400).json({
+        message: "Task can’t be due after the project deadline.",
+      });
+    }
 
     const task = await prisma.task.create({
       data: {

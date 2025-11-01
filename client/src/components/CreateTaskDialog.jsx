@@ -32,9 +32,20 @@ export default function CreateTaskDialog({
     due_date: "",
   });
 
+  const projectLimit = project?.end_date
+    ? new Date(project.end_date).toISOString().split("T")[0]
+    : undefined;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    if (projectLimit && formData.due_date > projectLimit) {
+      toast.error("Task cannot be due after the project's end date.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const { data } = await api.post(
         "/api/tasks",
@@ -45,6 +56,7 @@ export default function CreateTaskDialog({
         },
         { headers: { Authorization: `Bearer ${await getToken()}` } },
       );
+
       setShowCreateTask(false);
       setFormData({
         title: "",
@@ -55,6 +67,7 @@ export default function CreateTaskDialog({
         assigneeid: "",
         due_date: "",
       });
+
       toast.success(data?.message);
       dispatch(addTask(data.task));
     } catch (error) {
@@ -136,7 +149,7 @@ export default function CreateTaskDialog({
             </div>
           </div>
 
-          {/* Assignee and Status */}
+          {/* Assignee & Status */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-sm font-medium">Assignee</label>
@@ -172,7 +185,7 @@ export default function CreateTaskDialog({
             </div>
           </div>
 
-          {/* Due Date */}
+          {/* ✅ DUE DATE with LIMIT */}
           <div className="space-y-1">
             <label className="text-sm font-medium">Due Date</label>
             <div className="flex items-center gap-2">
@@ -180,16 +193,32 @@ export default function CreateTaskDialog({
               <input
                 type="date"
                 value={formData.due_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, due_date: e.target.value })
-                }
                 min={new Date().toISOString().split("T")[0]}
+                max={projectLimit} // ✅ Prevents selecting after project end
+                onChange={(e) => {
+                  const selected = e.target.value;
+                  if (projectLimit && selected > projectLimit) {
+                    toast.error(
+                      `Task cannot be due after the project ends on ${format(
+                        new Date(project.end_date),
+                        "PPP",
+                      )}`,
+                    );
+                    return;
+                  }
+                  setFormData({ ...formData, due_date: selected });
+                }}
                 className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1"
               />
             </div>
             {formData.due_date && (
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 {format(new Date(formData.due_date), "PPP")}
+                {project?.end_date &&
+                  ` (Project ends: ${format(
+                    new Date(project.end_date),
+                    "PPP",
+                  )})`}
               </p>
             )}
           </div>
