@@ -71,7 +71,7 @@ app.get("/", (_, res) => {
 app.use("/api/workspaces", workspaceRouter);
 app.use("/api/projects", projectRouter);
 app.use("/api/tasks", taskRouter);
-app.use("/api/comments/", commentRouter);
+app.use("/api/comments", commentRouter);
 //#endregion
 
 app.listen(PORT, () => {
