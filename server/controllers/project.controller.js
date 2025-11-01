@@ -27,7 +27,7 @@ export const updateProjectProgress = async (projectId) => {
     data: { progress },
   });
 
-  return progress;
+  // return progress;
 };
 //#endregion
 
