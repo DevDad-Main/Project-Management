@@ -32,8 +32,6 @@ export const getUserWorkspaces = async (req, res) => {
         .status(200)
         .json({ message: "No Workspaces Found", workspaces: [] });
 
-    console.log(workspaces);
-
     return res.status(200).json({ success: true, workspaces });
   } catch (error) {
     console.log(error);
