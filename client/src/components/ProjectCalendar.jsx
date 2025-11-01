@@ -32,11 +32,22 @@ const priorityBorders = {
   HIGH: "border-orange-300 dark:border-orange-500",
 };
 
-const ProjectCalendar = ({ tasks }) => {
+const ProjectCalendar = ({ tasks, project }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const today = new Date();
+
+  const projectStart = project?.start_date
+    ? new Date(project.start_date)
+    : null;
+  const projectEnd = project?.end_date ? new Date(project.end_date) : null;
+
+  const isOutsideRange = (date) => {
+    if (!projectStart || !projectEnd) return false;
+    return date < projectStart || date > projectEnd;
+  };
+
   const getTasksForDate = (date) =>
     tasks.filter((task) => isSameDay(task.due_date, date));
 
@@ -101,17 +112,27 @@ const ProjectCalendar = ({ tasks }) => {
               const hasOverdue = dayTasks.some(
                 (t) => t.status !== "DONE" && isBefore(t.due_date, today),
               );
+              const disabled = isOutsideRange(day);
 
               return (
                 <button
                   key={day}
-                  onClick={() => setSelectedDate(day)}
-                  className={`sm:h-14 rounded-md flex flex-col items-center justify-center text-sm
-                                    ${isSelected ? "bg-blue-200 text-blue-900 dark:bg-blue-600 dark:text-white" : "bg-zinc-50 text-zinc-900 dark:bg-zinc-800/40 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"}
-                                    ${hasOverdue ? "border border-red-300 dark:border-red-500" : ""}`}
+                  onClick={() => !disabled && setSelectedDate(day)}
+                  disabled={disabled}
+                  className={`
+                    sm:h-14 rounded-md flex flex-col items-center justify-center text-sm
+                    ${
+                      disabled
+                        ? "bg-zinc-200 text-zinc-400 dark:bg-zinc-800/40 dark:text-zinc-600 cursor-not-allowed opacity-60"
+                        : isSelected
+                          ? "bg-blue-200 text-blue-900 dark:bg-blue-600 dark:text-white"
+                          : "bg-zinc-50 text-zinc-900 dark:bg-zinc-800/40 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700"
+                    }
+                    ${hasOverdue ? "border border-red-300 dark:border-red-500" : ""}
+                  `}
                 >
                   <span>{format(day, "d")}</span>
-                  {dayTasks.length > 0 && (
+                  {!disabled && dayTasks.length > 0 && (
                     <span className="text-[10px] text-blue-700 dark:text-blue-400">
                       {dayTasks.length} tasks
                     </span>

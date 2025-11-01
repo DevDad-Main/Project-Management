@@ -175,7 +175,7 @@ export default function ProjectDetail() {
           )}
           {activeTab === "calendar" && (
             <div className=" dark:bg-zinc-900/40 rounded max-w-6xl">
-              <ProjectCalendar tasks={tasks} />
+              <ProjectCalendar tasks={tasks} project={project} />
             </div>
           )}
           {activeTab === "settings" && (
