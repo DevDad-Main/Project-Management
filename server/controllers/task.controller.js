@@ -69,7 +69,7 @@ export const createTask = async (req, res) => {
       include: { assignee: true },
     });
 
-    updateProjectProgress(task.projectId);
+    await updateProjectProgress(task.projectId);
 
     await newTaskAddedEmail(task.id, origin);
 
@@ -119,7 +119,7 @@ export const updateTask = async (req, res) => {
       data: req.body,
     });
 
-    updateProjectProgress(updatedTask.projectId);
+    await updateProjectProgress(updatedTask.projectId);
 
     return res.status(200).json({
       task: updatedTask,
