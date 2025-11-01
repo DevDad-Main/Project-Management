@@ -2,6 +2,7 @@ import { getAuth } from "@clerk/express";
 import prisma from "../configs/prisma.js";
 import { inngest } from "../inngest/index.js";
 import { newTaskAddedEmail } from "../configs/nodeMailer.js";
+import { updateProjectProgress } from "./project.controller.js";
 
 //#region Create Task
 export const createTask = async (req, res) => {
@@ -68,6 +69,8 @@ export const createTask = async (req, res) => {
       include: { assignee: true },
     });
 
+    await updateProjectProgress(task.projectId);
+
     await newTaskAddedEmail(task.id, origin);
 
     // await inngest.send({
@@ -116,6 +119,8 @@ export const updateTask = async (req, res) => {
       data: req.body,
     });
 
+    await updateProjectProgress(updatedTask.projectId);
+
     return res.status(200).json({
       task: updatedTask,
       message: "Task updated successfully",
@@ -125,7 +130,7 @@ export const updateTask = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-//#endregionk
+//#endregion
 
 //#region Delete Task
 export const deleteTask = async (req, res) => {
@@ -162,6 +167,15 @@ export const deleteTask = async (req, res) => {
     await prisma.task.deleteMany({
       where: { id: { in: taskIds } },
     });
+
+    // Get unique projectIds from the deleted tasks
+    const affectedProjectIds = [...new Set(tasks.map((t) => t.projectId))];
+    console.log(affectedProjectIds);
+
+    // Update progress for each affected project
+    await Promise.all(
+      affectedProjectIds.map((projectId) => updateProjectProgress(projectId)),
+    );
 
     return res.status(200).json({
       message: "Tasks deleted successfully",

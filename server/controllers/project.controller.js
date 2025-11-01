@@ -1,6 +1,36 @@
 import { getAuth } from "@clerk/express";
 import prisma from "../configs/prisma.js";
 
+//#region Update Course Progress
+/**
+ * This function will update the progress of a project dynamically based on the number of completed tasks
+ * @param {string} projectId
+ * @returns {number} progress
+ */
+export const updateProjectProgress = async (projectId) => {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: { tasks: true },
+  });
+
+  if (!project) return;
+
+  const totalTasks = project.tasks.length;
+  const completedTasks = project.tasks.filter(
+    (t) => t.status === "DONE",
+  ).length;
+  const progress =
+    totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { progress },
+  });
+
+  return progress;
+};
+//#endregion
+
 //#region Create Project
 export const createProject = async (req, res) => {
   try {

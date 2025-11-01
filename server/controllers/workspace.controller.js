@@ -32,6 +32,26 @@ export const getUserWorkspaces = async (req, res) => {
         .status(200)
         .json({ message: "No Workspaces Found", workspaces: [] });
 
+    console.log(workspaces);
+
+    // NOTE: Instead of handling it on the fly we will make a wrapper function to handle it in the project controller
+    // const workspaceWithProgress = workspaces.map((workspace) => {
+    //   const projectsWithProgress = workspace.projects.map((project) => {
+    //     const totalTasks = project.tasks.length;
+    //     const completedTasks = project.tasks.filter(
+    //       (t) => t.status === "DONE",
+    //     ).length;
+    //     const calculatedProgress =
+    //       totalTasks === 0
+    //         ? 0
+    //         : Math.round((completedTasks / totalTasks) * 100);
+    //
+    //     return { ...project, calculatedProgress };
+    //   });
+    //
+    //   return { ...workspace, projects: projectsWithProgress };
+    // });
+
     return res.status(200).json({ success: true, workspaces });
   } catch (error) {
     console.log(error);
