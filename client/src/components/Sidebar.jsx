@@ -9,10 +9,10 @@ import {
   SettingsIcon,
   UsersIcon,
 } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { useClerk } from "@clerk/clerk-react";
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
-  const { openUserProfile } = useUser();
+  const { openUserProfile } = useClerk();
   const menuItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboardIcon },
     { name: "Projects", href: "/projects", icon: FolderOpenIcon },
