@@ -1,12 +1,13 @@
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { CalendarIcon, MessageCircle, PenIcon } from "lucide-react";
 import { assets } from "../assets/assets";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import api from "../configs/api";
+import { io } from "socket.io-client";
 
 const TaskDetails = () => {
   const [searchParams] = useSearchParams();
@@ -20,6 +21,7 @@ const TaskDetails = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
+  const socket = useRef(null);
 
   const { currentWorkspace } = useSelector((state) => state.workspace);
 
@@ -37,6 +39,21 @@ const TaskDetails = () => {
       toast.error(error?.response?.data?.message || error.message);
     }
   };
+
+  useEffect(() => {
+    socket.current = io(import.meta.env.VITE_BASE_URL, {
+      transports: ["websocket"],
+      withCredentials: true,
+    });
+
+    socket.current.on("connect", () => console.log("Connected to socket.io"));
+
+    // socket.current.on("receive_message", (message) => {
+    //   setMessages((prev) => [...prev, message]);
+    // });
+
+    return () => socket.current.disconnect();
+  }, []);
 
   const fetchTaskDetails = async () => {
     setLoading(true);

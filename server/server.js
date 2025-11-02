@@ -8,10 +8,12 @@ import workspaceRouter from "./routes/workspace.route.js";
 import projectRouter from "./routes/project.route.js";
 import taskRouter from "./routes/task.route.js";
 import commentRouter from "./routes/comment.route.js";
+import http from "http";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import hpp from "hpp";
 import morgan from "morgan";
+import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
 // import xss from "xss"; // TODO: Fix Import
 
@@ -27,7 +29,6 @@ const allowedOrigins = process.env.CORS_ORIGIN.split(",");
 //#endregion
 
 //#region Middleware
-
 // Security Middleware
 app.use(clerkMiddleware());
 app.use(helmet()); // Set security HTTP headers
@@ -74,6 +75,24 @@ app.use("/api/tasks", taskRouter);
 app.use("/api/comments", commentRouter);
 //#endregion
 
-app.listen(PORT, () => {
+//#region Socket.io
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+    credentials: true,
+  },
+});
+
+const onlineUsers = new Map();
+
+io.on("connection", (socket) => {
+  console.log(`⚡: ${socket.id} user just connected!`);
+});
+
+app.set("io", io);
+
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
