@@ -136,7 +136,6 @@ export const updateProject = async (req, res) => {
       end_date,
       team_members,
       team_lead,
-      progress,
       priority,
     } = req.body;
 
@@ -176,7 +175,6 @@ export const updateProject = async (req, res) => {
         name,
         status,
         priority,
-        progress,
         start_date: start_date ? new Date(start_date) : null,
         end_date: end_date ? new Date(end_date) : null,
       },
