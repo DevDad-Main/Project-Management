@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import { serve } from "inngest/express";
-import { clerkMiddleware } from "@clerk/express";
+import { clerkMiddleware, verifyToken } from "@clerk/express";
 import { inngest, functions } from "./inngest/index.js";
 import workspaceRouter from "./routes/workspace.route.js";
 import projectRouter from "./routes/project.route.js";
@@ -87,8 +87,41 @@ const io = new Server(server, {
 
 const onlineUsers = new Map();
 
-io.on("connection", (socket) => {
-  console.log(`⚡: ${socket.id} user just connected!`);
+io.on("connection", async (socket) => {
+  const socketToken = socket.handshake.auth?.token;
+  const token = await verifyToken(socketToken);
+
+  if (!token) {
+    console.log("Socket connection failed: No Token Provided");
+    socket.disconnect();
+    return;
+  }
+
+  try {
+    const userId = token;
+    console.log(
+      `⚡: Socket ID: ${socket.id} - User ID: ${token} just connected!`,
+    );
+
+    const userSet = onlineUsers.get(userId) ?? new Set();
+    userSet.add(socket.id);
+    onlineUsers.set(userId, userSet);
+
+    // TODO: Setup our event listeners for the socket
+
+    socket.on("disconnect", () => {
+      console.log(`Socket disconnected: ${socket.id}`);
+      const userSet = onlineUsers.get(userId);
+      if (userSet) {
+        userSet.delete(socket.id);
+        if (userSet.size === 0) onlineUsers.delete(userId);
+        else onlineUsers.set(userId, userSet);
+      }
+    });
+  } catch (error) {
+    console.log("Socket connection rejected: invalid token");
+    socket.disconnect();
+  }
 });
 
 app.set("io", io);

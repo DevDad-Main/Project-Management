@@ -40,8 +40,10 @@ const TaskDetails = () => {
     }
   };
 
-  useEffect(() => {
+  useEffect(async () => {
+    const token = await getToken();
     socket.current = io(import.meta.env.VITE_BASE_URL, {
+      auth: { token },
       transports: ["websocket"],
       withCredentials: true,
     });

@@ -58,7 +58,7 @@ export const getTaskComments = async (req, res) => {
     });
 
     if (comments.length === 0) {
-      return res.status(404).json({ message: "Comments not found" });
+      return res.status(404).json({ message: "No comments so far" });
     }
 
     return res.status(200).json({
