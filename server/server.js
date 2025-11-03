@@ -30,20 +30,6 @@ const allowedOrigins = process.env.CORS_ORIGIN.split(",");
 
 //#region Middleware
 // Security Middleware
-app.use(clerkMiddleware());
-app.use(helmet()); // Set security HTTP headers
-// app.use(xss()); // Data sanitization against XSS
-app.use(hpp()); // Prevent HTTP Parameter Pollution
-app.use("/api", limiter); // Apply rate limiting to all routes
-
-const env = process.env.NODE_ENV || "development"; // fallback
-if (env === "development") {
-  app.use(morgan("dev"));
-}
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(
   cors({
     origin: allowedOrigins,
@@ -60,6 +46,20 @@ app.use(
     ],
   }),
 );
+app.use(clerkMiddleware());
+app.use(helmet()); // Set security HTTP headers
+// app.use(xss()); // Data sanitization against XSS
+app.use(hpp()); // Prevent HTTP Parameter Pollution
+app.use("/api", limiter); // Apply rate limiting to all routes
+
+const env = process.env.NODE_ENV || "development"; // fallback
+if (env === "development") {
+  app.use(morgan("dev"));
+}
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 //NOTE: Inngest Endpoint so it can listen to our events and webhooks and fire them off.
 app.use("/api/inngest", serve({ client: inngest, functions }));
 //#endregion
@@ -100,7 +100,7 @@ io.on("connection", async (socket) => {
   try {
     const userId = socketToken.slice(0, 10);
     console.log(
-      `⚡: Socket ID: ${socket.id} - User ID: ${socketToken.slice(0, 10)} just connected!`,
+      `Socket ID: ${socket.id} - User ID: ${socketToken.slice(0, 10)} just connected!`,
     );
 
     const userSet = onlineUsers.get(userId) ?? new Set();

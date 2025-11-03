@@ -58,11 +58,12 @@ export const getTaskComments = async (req, res) => {
     const comments = await prisma.comment.findMany({
       where: { taskId },
       include: { user: true },
+      orderBy: { createdAt: "asc" }, // Returns us Oldest to Newest
     });
 
-    if (comments.length === 0) {
-      return res.status(404).json({ message: "No comments so far" });
-    }
+    // if (comments.length === 0) {
+    //   return res.status(404).json({ message: "No comments so far" });
+    // }
 
     return res.status(200).json({
       success: true,

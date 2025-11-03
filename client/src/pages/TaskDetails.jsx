@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { CalendarIcon, MessageCircle, PenIcon } from "lucide-react";
-import { assets } from "../assets/assets";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import api from "../configs/api";
 import { io } from "socket.io-client";
@@ -25,57 +24,67 @@ const TaskDetails = () => {
 
   const { currentWorkspace } = useSelector((state) => state.workspace);
 
-  const fetchComments = async () => {
-    if (!taskId) return;
-    try {
-      const token = await getToken();
-      const { data } = await api.get(`/api/comments/${taskId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setComments(data.comments || []);
-    } catch (error) {
-      toast.error(error?.response?.data?.message || error.message);
-    }
-  };
-
+  // Fetch initial comments
   useEffect(() => {
-    (async () => {
-      const token = await getToken();
+    const fetchComments = async () => {
+      if (!taskId) return;
+      try {
+        const token = await getToken();
+        const { data } = await api.get(`/api/comments/${taskId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setComments(data.comments || []);
+      } catch (error) {
+        toast.error(error?.response?.data?.message || error.message);
+      }
+    };
+    fetchComments();
+  }, [taskId]);
 
-      socket.current = io(import.meta.env.VITE_BASE_URL, {
+  // Setup socket connection & listener
+  useEffect(() => {
+    if (!taskId) return;
+
+    const setupSocket = async () => {
+      const token = await getToken();
+      const s = io(import.meta.env.VITE_BASE_URL, {
         auth: { token },
         transports: ["websocket"],
         withCredentials: true,
       });
 
-      socket.current.on("connect", () => {
+      socket.current = s;
+
+      s.on("connect", () => {
         console.log("Socket connected");
-        socket.current.emit("join_task", taskId);
+        s.emit("join_task", taskId);
       });
 
-      return () => socket.current.disconnect();
-    })();
-  }, [taskId]);
+      // Listen for new comments
+      s.on("comment:new", (comment) => {
+        setComments((prev) => {
+          // prevent duplicates
+          if (prev.find((c) => c.id === comment.id)) return prev;
+          return [...prev, comment];
+        });
+      });
+    };
 
-  useEffect(() => {
-    if (!socket.current) return;
-
-    socket.current.on("comment:new", (comment) => {
-      setComments((prev) => [...prev, comment]);
-    });
+    setupSocket();
 
     return () => {
-      socket.current.off("comment:new");
+      if (socket.current) {
+        socket.current.off("comment:new");
+        socket.current.disconnect();
+      }
     };
-  }, [socket.current]);
+  }, [taskId]);
 
   const fetchTaskDetails = async () => {
     setLoading(true);
     if (!projectId || !taskId) return;
 
-    const proj = currentWorkspace.projects.find((p) => p.id === projectId);
+    const proj = currentWorkspace?.projects?.find((p) => p.id === projectId);
     if (!proj) return;
 
     const tsk = proj.tasks.find((t) => t.id === taskId);
@@ -86,6 +95,10 @@ const TaskDetails = () => {
     setLoading(false);
   };
 
+  useEffect(() => {
+    fetchTaskDetails();
+  }, [taskId]);
+
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
@@ -93,16 +106,13 @@ const TaskDetails = () => {
       toast.loading("Adding comment...");
       const token = await getToken();
 
-      const { data } = await api.post(
+      await api.post(
         "/api/comments/",
-        {
-          taskId: task.id,
-          content: newComment,
-        },
+        { taskId: task.id, content: newComment },
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      setComments((prev) => [...prev, data.comment]);
+      // Don't add to comments here, socket will handle it - Prevents duplicates on the frontend
       setNewComment("");
       toast.dismissAll();
       toast.success("Comment added.");
@@ -112,20 +122,6 @@ const TaskDetails = () => {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    fetchTaskDetails();
-  }, [taskId]);
-
-  // useEffect(() => {
-  //   if (taskId && task) {
-  //     fetchComments();
-  //     const interval = setInterval(() => {
-  //       fetchComments();
-  //     }, 10000);
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [taskId, task]);
 
   if (loading)
     return (
@@ -140,7 +136,7 @@ const TaskDetails = () => {
     <div className="flex flex-col-reverse lg:flex-row gap-6 sm:p-4 text-gray-900 dark:text-zinc-100 max-w-6xl mx-auto">
       {/* Left: Comments / Chatbox */}
       <div className="w-full lg:w-2/3">
-        <div className="p-5 rounded-md  border border-gray-300 dark:border-zinc-800  flex flex-col lg:h-[80vh]">
+        <div className="p-5 rounded-md border border-gray-300 dark:border-zinc-800 flex flex-col lg:h-[80vh]">
           <h2 className="text-base font-semibold flex items-center gap-2 mb-4 text-gray-900 dark:text-white">
             <MessageCircle className="size-5" /> Task Discussion (
             {comments.length})
@@ -152,7 +148,9 @@ const TaskDetails = () => {
                 {comments.map((comment) => (
                   <div
                     key={comment.id}
-                    className={`sm:max-w-4/5 dark:bg-gradient-to-br dark:from-zinc-800 dark:to-zinc-900 border border-gray-300 dark:border-zinc-700 p-3 rounded-md ${comment.user.id === user?.id ? "ml-auto" : "mr-auto"}`}
+                    className={`sm:max-w-4/5 dark:bg-gradient-to-br dark:from-zinc-800 dark:to-zinc-900 border border-gray-300 dark:border-zinc-700 p-3 rounded-md ${
+                      comment.user.id === user?.id ? "ml-auto" : "mr-auto"
+                    }`}
                   >
                     <div className="flex items-center gap-2 mb-1 text-sm text-gray-500 dark:text-zinc-400">
                       <img
@@ -184,7 +182,6 @@ const TaskDetails = () => {
             )}
           </div>
 
-          {/* Add Comment */}
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
             <textarea
               value={newComment}
@@ -195,7 +192,7 @@ const TaskDetails = () => {
             />
             <button
               onClick={handleAddComment}
-              className="bg-gradient-to-l from-blue-500 to-blue-600 transition-colors text-white text-sm px-5 py-2 rounded "
+              className="bg-gradient-to-l from-blue-500 to-blue-600 transition-colors text-white text-sm px-5 py-2 rounded"
             >
               Post
             </button>
@@ -253,7 +250,6 @@ const TaskDetails = () => {
           <div className="p-4 rounded-md bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 border border-gray-300 dark:border-zinc-800 ">
             <p className="text-xl font-medium mb-4">Project Details</p>
             <h2 className="text-gray-900 dark:text-zinc-100 flex items-center gap-2">
-              {" "}
               <PenIcon className="size-4" /> {project.name}
             </h2>
             <p className="text-xs mt-3">

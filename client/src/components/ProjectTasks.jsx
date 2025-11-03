@@ -343,7 +343,12 @@ const ProjectTasks = ({ tasks }) => {
                 return (
                   <div
                     key={task.id}
-                    className=" dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-4 flex flex-col gap-2"
+                    onClick={() =>
+                      navigate(
+                        `/taskDetails?projectId=${task.projectId}&taskId=${task.id}`,
+                      )
+                    }
+                    className=" dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-4 flex flex-col gap-2 cursor-pointer"
                   >
                     <div className="flex items-center justify-between">
                       <h3 className="text-zinc-900 dark:text-zinc-200 text-sm font-semibold">
