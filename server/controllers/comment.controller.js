@@ -4,6 +4,7 @@ import prisma from "../configs/prisma.js";
 //#region Create Comment
 export const createComment = async (req, res) => {
   try {
+    const io = req.app.get("io");
     const { userId } = getAuth(req);
     const { content, taskId } = req.body;
 
@@ -34,6 +35,8 @@ export const createComment = async (req, res) => {
       },
       include: { user: true },
     });
+
+    io.to(`task_${taskId}`).emit("comment:new", comment);
 
     return res.status(201).json({
       message: "Comment created successfully",

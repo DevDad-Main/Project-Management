@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import { serve } from "inngest/express";
-import { clerkMiddleware, verifyToken } from "@clerk/express";
+import { clerkMiddleware } from "@clerk/express";
 import { inngest, functions } from "./inngest/index.js";
 import workspaceRouter from "./routes/workspace.route.js";
 import projectRouter from "./routes/project.route.js";
@@ -89,25 +89,38 @@ const onlineUsers = new Map();
 
 io.on("connection", async (socket) => {
   const socketToken = socket.handshake.auth?.token;
-  const token = await verifyToken(socketToken);
 
-  if (!token) {
+  if (!socketToken) {
     console.log("Socket connection failed: No Token Provided");
     socket.disconnect();
     return;
   }
+  console.log(socketToken);
 
   try {
-    const userId = token;
+    const userId = socketToken.slice(0, 10);
     console.log(
-      `⚡: Socket ID: ${socket.id} - User ID: ${token} just connected!`,
+      `⚡: Socket ID: ${socket.id} - User ID: ${socketToken.slice(0, 10)} just connected!`,
     );
 
     const userSet = onlineUsers.get(userId) ?? new Set();
     userSet.add(socket.id);
     onlineUsers.set(userId, userSet);
 
-    // TODO: Setup our event listeners for the socket
+    // NOTE: Users now will be able to join rooms based on their userId and the task at hand.
+    socket.on("join_task", (taskId) => {
+      socket.join(`task_${taskId}`);
+      console.log(`User ${userId} joined room task_${taskId}`);
+    });
+
+    socket.on("task:comment", ({ taskId, message }) => {
+      io.to(`task_${taskId}`).emit("comment:new", {
+        taskId,
+        userId: socket.userId,
+        message,
+        createdAt: new Date(),
+      });
+    });
 
     socket.on("disconnect", () => {
       console.log(`Socket disconnected: ${socket.id}`);
@@ -119,6 +132,7 @@ io.on("connection", async (socket) => {
       }
     });
   } catch (error) {
+    console.log(error);
     console.log("Socket connection rejected: invalid token");
     socket.disconnect();
   }

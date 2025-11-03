@@ -40,22 +40,36 @@ const TaskDetails = () => {
     }
   };
 
-  useEffect(async () => {
-    const token = await getToken();
-    socket.current = io(import.meta.env.VITE_BASE_URL, {
-      auth: { token },
-      transports: ["websocket"],
-      withCredentials: true,
+  useEffect(() => {
+    (async () => {
+      const token = await getToken();
+
+      socket.current = io(import.meta.env.VITE_BASE_URL, {
+        auth: { token },
+        transports: ["websocket"],
+        withCredentials: true,
+      });
+
+      socket.current.on("connect", () => {
+        console.log("Socket connected");
+        socket.current.emit("join_task", taskId);
+      });
+
+      return () => socket.current.disconnect();
+    })();
+  }, [taskId]);
+
+  useEffect(() => {
+    if (!socket.current) return;
+
+    socket.current.on("comment:new", (comment) => {
+      setComments((prev) => [...prev, comment]);
     });
 
-    socket.current.on("connect", () => console.log("Connected to socket.io"));
-
-    // socket.current.on("receive_message", (message) => {
-    //   setMessages((prev) => [...prev, message]);
-    // });
-
-    return () => socket.current.disconnect();
-  }, []);
+    return () => {
+      socket.current.off("comment:new");
+    };
+  }, [socket.current]);
 
   const fetchTaskDetails = async () => {
     setLoading(true);
@@ -103,15 +117,15 @@ const TaskDetails = () => {
     fetchTaskDetails();
   }, [taskId]);
 
-  useEffect(() => {
-    if (taskId && task) {
-      fetchComments();
-      const interval = setInterval(() => {
-        fetchComments();
-      }, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [taskId, task]);
+  // useEffect(() => {
+  //   if (taskId && task) {
+  //     fetchComments();
+  //     const interval = setInterval(() => {
+  //       fetchComments();
+  //     }, 10000);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [taskId, task]);
 
   if (loading)
     return (
