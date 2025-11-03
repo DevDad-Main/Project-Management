@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Plus, Save } from "lucide-react";
+import { Plus, Save, Trash2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import AddProjectMember from "./AddProjectMember";
 import { useDispatch } from "react-redux";
@@ -41,6 +41,31 @@ export default function ProjectSettings({ project }) {
       toast.error(error?.response?.data?.message || error.message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const removeMember = async (userId) => {
+    if (!confirm("Are you sure you want to remove this member?")) return;
+
+    try {
+      toast.loading("Removing member...");
+      const token = await getToken();
+
+      await api.delete(`/api/projects/${project.id}/members/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Update the project state locally (optional, or refetch)
+      setFormData((prev) => ({
+        ...prev,
+        members: prev.members.filter((m) => m.user.id !== userId),
+      }));
+
+      toast.dismiss();
+      toast.success("Member removed successfully");
+    } catch (error) {
+      toast.dismiss();
+      toast.error(error?.response?.data?.message || error.message);
     }
   };
 
@@ -200,11 +225,23 @@ export default function ProjectSettings({ project }) {
                   className="flex items-center justify-between px-3 py-2 rounded dark:bg-zinc-800 text-sm text-zinc-900 dark:text-zinc-300"
                 >
                   <span> {member?.user?.email || "Unknown"} </span>
-                  {project.team_lead === member.user.id && (
-                    <span className="px-2 py-0.5 rounded-xs ring ring-zinc-200 dark:ring-zinc-600">
-                      Team Lead
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {project.team_lead === member.user.id && (
+                      <span className="px-2 py-0.5 rounded-xs ring ring-zinc-200 dark:ring-zinc-600">
+                        Team Lead
+                      </span>
+                    )}
+                    {/* Remove Button */}
+
+                    {project.team_lead !== member.user.id && (
+                      <button
+                        onClick={() => removeMember(member.user.id)}
+                        //  className="text-red-500 hover:text-red-700 text-sm px-2 py-1 rounded border border-red-300 dark:border-red-700 hover:bg-red-100 dark:hover:bg-red-800"
+                      >
+                        <Trash2Icon height={16} width={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

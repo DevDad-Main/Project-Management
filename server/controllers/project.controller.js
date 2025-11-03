@@ -247,3 +247,36 @@ export const addMemberToProject = async (req, res) => {
   }
 };
 //#endregion
+
+//#region Remove Memeber From Project
+export const removeMemberFromProject = async (req, res) => {
+  try {
+    const { userId } = getAuth(req);
+    const { projectId, memberId } = req.params;
+
+    // check if  user is project lead
+    const project = await prisma.project.findUnique({
+      where: { id: projectId, team_lead: userId },
+      include: {
+        members: { include: { user: true } },
+      },
+    });
+
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    // Check if the memberId from the params is in the project as a member
+    const member = project.members.find((m) => m.userId === memberId);
+
+    if (!member)
+      return res
+        .status(404)
+        .json({ message: "Member Not Found In This Project" });
+
+    await prisma.projectMember.delete({
+      where: { id: member.id },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+//#endregion

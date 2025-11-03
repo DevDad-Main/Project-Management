@@ -95,7 +95,7 @@ io.on("connection", async (socket) => {
     socket.disconnect();
     return;
   }
-  console.log(socketToken);
+  // console.log(socketToken);
 
   try {
     const userId = socketToken.slice(0, 10);
