@@ -21,6 +21,7 @@ const TaskDetails = () => {
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
   const socket = useRef(null);
+  const lastCommentRef = useRef(null);
 
   const { currentWorkspace } = useSelector((state) => state.workspace);
 
@@ -41,7 +42,7 @@ const TaskDetails = () => {
     fetchComments();
   }, [taskId]);
 
-  // Setup socket connection & listener
+  // Socket setup & listener
   useEffect(() => {
     if (!taskId) return;
 
@@ -60,10 +61,8 @@ const TaskDetails = () => {
         s.emit("join_task", taskId);
       });
 
-      // Listen for new comments
       s.on("comment:new", (comment) => {
         setComments((prev) => {
-          // prevent duplicates
           if (prev.find((c) => c.id === comment.id)) return prev;
           return [...prev, comment];
         });
@@ -79,6 +78,13 @@ const TaskDetails = () => {
       }
     };
   }, [taskId]);
+
+  // Scroll to latest comment
+  useEffect(() => {
+    if (lastCommentRef.current) {
+      lastCommentRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [comments]);
 
   const fetchTaskDetails = async () => {
     setLoading(true);
@@ -112,7 +118,7 @@ const TaskDetails = () => {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      // Don't add to comments here, socket will handle it - Prevents duplicates on the frontend
+      // Do not manually add to state, socket handles it
       setNewComment("");
       toast.dismissAll();
       toast.success("Comment added.");
@@ -145,9 +151,10 @@ const TaskDetails = () => {
           <div className="flex-1 md:overflow-y-scroll no-scrollbar">
             {comments.length > 0 ? (
               <div className="flex flex-col gap-4 mb-6 mr-2">
-                {comments.map((comment) => (
+                {comments.map((comment, index) => (
                   <div
-                    key={comment.id}
+                    key={comment.id + index} // ensures unique key
+                    ref={index === comments.length - 1 ? lastCommentRef : null}
                     className={`sm:max-w-4/5 dark:bg-gradient-to-br dark:from-zinc-800 dark:to-zinc-900 border border-gray-300 dark:border-zinc-700 p-3 rounded-md ${
                       comment.user.id === user?.id ? "ml-auto" : "mr-auto"
                     }`}
