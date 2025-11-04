@@ -1,7 +1,5 @@
 import { getAuth } from "@clerk/express";
 import prisma from "../configs/prisma.js";
-import { inngest } from "../inngest/index.js";
-import { newTaskAddedEmail } from "../configs/nodeMailer.js";
 import { updateProjectProgress } from "./project.controller.js";
 import { emailQueue } from "../queues/emailQueue.js";
 
@@ -72,7 +70,6 @@ export const createTask = async (req, res) => {
 
     await updateProjectProgress(task.projectId);
 
-    console.log("Task With Assignee Details: ", taskWithAssignee);
     // await newTaskAddedEmail(task.id, origin);
 
     try {
@@ -95,11 +92,6 @@ export const createTask = async (req, res) => {
     } catch (error) {
       console.log(error);
     }
-
-    // await inngest.send({
-    //   name: "app/task.assigned",
-    //   data: { taskId: task.id, origin },
-    // });
 
     return res.status(200).json({
       task: taskWithAssignee,

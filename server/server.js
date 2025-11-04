@@ -147,7 +147,6 @@ app.set("io", io);
 //#endregion
 
 //#region Bull Board
-
 // NOTE: Create a server adapter for Bull Board - similiar to our test project
 const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath("/admin/queues");
