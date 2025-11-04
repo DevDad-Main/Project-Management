@@ -12,14 +12,13 @@ const emailWorker = new Worker(
   async (job) => {
     console.log("Processing email job:", job.name);
 
-    await sendEmailViaQueue(job.data);
-    // try {
-    //   // NOTE: We pass in the job.data as when we add /create the job we will pass in the information as an object.
-    //   await sendEmailViaQueue(job.data);
-    // } catch (err) {
-    //   console.error("Worker failed:", err);
-    //   throw err;
-    // }
+    try {
+      // NOTE: We pass in the job.data as when we add /create the job we will pass in the information as an object.
+      await sendEmailViaQueue(job.data);
+    } catch (err) {
+      console.error("Worker failed:", err);
+      throw err;
+    }
   },
   { connection: bullmqConnection },
 );
