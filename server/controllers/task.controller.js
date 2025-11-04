@@ -3,6 +3,7 @@ import prisma from "../configs/prisma.js";
 import { inngest } from "../inngest/index.js";
 import { newTaskAddedEmail } from "../configs/nodeMailer.js";
 import { updateProjectProgress } from "./project.controller.js";
+import { emailQueue } from "../queues/emailQueue.js";
 
 //#region Create Task
 export const createTask = async (req, res) => {
@@ -66,12 +67,33 @@ export const createTask = async (req, res) => {
 
     const taskWithAssignee = await prisma.task.findUnique({
       where: { id: task.id },
-      include: { assignee: true },
+      include: { assignee: true, project: true },
     });
 
     await updateProjectProgress(task.projectId);
 
-    await newTaskAddedEmail(task.id, origin);
+    console.log("Task With Assignee Details: ", taskWithAssignee);
+    // await newTaskAddedEmail(task.id, origin);
+
+    try {
+      // HACK: We are testing out our new BullMQ workers instead of relying on the above function to fire off - More Reliable method as we can now define some job configs
+      await emailQueue.add(
+        "new-task-email",
+        {
+          to: taskWithAssignee.assignee.email,
+          task: taskWithAssignee,
+          origin,
+        },
+        {
+          attempts: 3, // Rety 3 times
+          backoff: 2000, // Wait for 2 seconds before retrying
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
+    } catch (error) {
+      console.log(error);
+    }
 
     // await inngest.send({
     //   name: "app/task.assigned",
