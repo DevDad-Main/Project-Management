@@ -1,6 +1,6 @@
 import { Queue, Worker, QueueEvents } from "bullmq";
 import { bullmqConnection } from "../configs/bullmq.js";
-import { sendEmailViaQueue } from "../configs/nodeMailer.js";
+import { sendEmailViaQueueSendGrid } from "../configs/sendGrid.js";
 
 // HACK: This realisitically isn't an industry standard way of handling the queues and workers - These should be decoupled, having our workers in one dir and file and then queues in another dir and file. The only reason im keeping them coupled is due to having to use "node <path_to_worker>" in our package.json and for development and learning purposes i want to keep it simpler
 
@@ -14,9 +14,15 @@ const emailWorker = new Worker(
 
     try {
       // NOTE: We pass in the job.data as when we add /create the job we will pass in the information as an object.
-      await sendEmailViaQueue(job.data);
+      // HACK: Simple way of using nodemaiiler which we know works on local host but railway blocks those specific ports due to spam protection but then send grid only gives you a 60 day trial... -> todo: Find an alternative
+      if (process.env.NODE_ENV === "production") {
+        await sendEmailViaQueueSendGrid(job.data);
+      } else {
+        await sendEmailViaQueueNodeMailer(job.data);
+      }
     } catch (err) {
-      console.error("Worker failed:", err);
+      console.error("Worker failed for Job ID:", job.id);
+      console.error("Error details:", err.response?.body || err);
       throw err;
     }
   },

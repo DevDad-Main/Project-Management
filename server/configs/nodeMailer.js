@@ -29,7 +29,7 @@ const sendEmail = async ({ to, subject, body }) => {
   return response;
 };
 
-export const sendEmailViaQueue = async ({ to, task, origin }) => {
+export const sendEmailViaQueueNodeMailer = async ({ to, task, origin }) => {
   await sendEmail({
     to,
     subject: `New Task Assigned in ${task.project.name}`,
