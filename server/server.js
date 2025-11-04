@@ -15,6 +15,11 @@ import hpp from "hpp";
 import morgan from "morgan";
 import { Server } from "socket.io";
 import cookieParser from "cookie-parser";
+import { emailQueue } from "./queues/emailQueue.js";
+import { ExpressAdapter } from "@bull-board/express";
+import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { bullmqConnection } from "./configs/bullmq.js";
 // import xss from "xss"; // TODO: Fix Import
 
 //#region Constants
@@ -139,7 +144,24 @@ io.on("connection", async (socket) => {
 });
 
 app.set("io", io);
+//#endregion
+
+//#region Bull Board
+
+// NOTE: Create a server adapter for Bull Board - similiar to our test project
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath("/admin/queues");
+
+// NOTE: Attach the queues to the dashboard
+createBullBoard({
+  queues: [new BullMQAdapter(emailQueue)],
+  serverAdapter,
+});
+
+// NOTE: Mount the dashboard route
+app.use("/admin/queues", serverAdapter.getRouter());
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Bull Board available at: http://localhost:${PORT}/admin/queues`);
 });

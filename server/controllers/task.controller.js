@@ -87,7 +87,8 @@ export const createTask = async (req, res) => {
         {
           attempts: 3, // Rety 3 times
           backoff: 2000, // Wait for 2 seconds before retrying
-          removeOnComplete: true,
+          removeOnComplete: 100, //N NOTE: Only keep the last 100 jobs in the queue - Good for testing
+          // removeOnComplete: true, // NOTE: Using free redis instance so uncomment if we have issues
           removeOnFail: false,
         },
       );
