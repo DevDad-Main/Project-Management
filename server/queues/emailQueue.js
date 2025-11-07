@@ -43,7 +43,7 @@ emailEvents.on("completed", ({ jobId }) => {
   console.log(`Email job completed: ${jobId}`);
 });
 
-emailEvents.on("failed", ({ jobId }, failedReason) => {
+emailEvents.on("failed", ({ jobId, failedReason }) => {
   console.error(`Email job failed: ${jobId} - Reason: ${failedReason}`);
 });
 
